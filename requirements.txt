@@ -1,0 +1,11 @@
+# Core dependencies for SPOinPyTorch
+torch>=2.0.0
+numpy>=1.21.0
+gymnasium>=0.28.0
+
+# Optional dependencies for examples
+matplotlib>=3.5.0
+seaborn>=0.11.0
+optuna>=3.0.0
+tqdm>=4.60.0
+box2d-py>=2.3.5
