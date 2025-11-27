@@ -39,7 +39,7 @@ pip install -e .
 - Python: 3.11+.
 - PyTorch: 2.0+ (install per your CUDA setup from https://pytorch.org/).
 - Gymnasium: 0.29+ (for environments like LunarLanderContinuous-v3).
-- OS: Linux, macOS, or Windows; CUDA optional for GPU acceleration.
+- OS: Linux, macOS, or Windows', and CUDA optional for GPU acceleration.
 
 **Install core dependencies:**
 
@@ -55,7 +55,7 @@ Advice: Prefer the official PyTorch install command for your platform to get the
 
 ## SPO vs PPO (from the Research Paper):
 
-- Objective: PPO uses min(r * A, clip(r, 1-ε, 1+ε) * A); SPO uses a smooth penalty objective: r * A - (|A|/(2ε)) * (r-1)^2.
+- Objective: PPO uses min(r * A, clip(r, 1-ε, 1+ε) * A)', and SPO uses a smooth penalty objective: r * A - (|A|/(2ε)) * (r-1)^2.
 - Smoothness: SPO avoids clipping discontinuities, providing stable gradients for first order optimizers.
 - Trust region behavior: The quadratic penalty keeps the probability ratio r near 1 ± ε, improving constraint adherence without second order methods.
 - Empirical performance: The paper reports SPO outperforming PPO in several settings, particularly with large, complete networks.
@@ -91,21 +91,21 @@ Advantages over PPO (per the paper):
 ## Best Practices:
 
 - Normalize advantages: Set `Config.normalize_advantages = True` for improved stability.
-- Tuning epsilon (ε): Start with ε in [0.1, 0.3]; larger ε reduces the penalty and allows larger updates.
-- Learning rate: 3e-4 is a good default; try 1e-4 to 1e-3 depending on reward scale and network size.
-- Rollout length: `steps_per_batch` controls bias variance trade off; longer rollouts improve value targets but may increase correlation.
-- Minibatching: Use multiple epochs over minibatches for better sample efficiency; shuffle data each epoch.
+- Tuning epsilon (ε): Start with ε in [0.1, 0.3]', and larger ε reduces the penalty and allows larger updates.
+- Learning rate: 3e-4 is a good default', and try 1e-4 to 1e-3 depending on reward scale and network size.
+- Rollout length: `steps_per_batch` controls bias variance trade off', and longer rollouts improve value targets but may increase correlation.
+- Minibatching: Use multiple epochs over minibatches for better sample efficiency', and shuffle data each epoch.
 - Gradient clipping: Set `max_grad_norm` to prevent rare spikes in gradients.
 - Seeding: Fix `Config.seed` and set `torch.backends.cudnn.deterministic=True` if strict reproducibility is required.
-- Device: Move tensors and models to the same device; prefer float32; avoid implicit CPU to GPU and reverse transfers in the loop.
+- Device: Move tensors and models to the same device', and prefer float32', and avoid implicit CPU to GPU and reverse transfers in the loop.
 
 ## Troubleshooting:
 
-- Action out of bounds (continuous): Ensure `action_low` and `action_high` reflect your environment’s bounds; actions are clamped accordingly.
-- NaN losses: Reduce learning rate; enable gradient clipping; verify rewards are finite and observations are normalized.
-- Poor performance vs PPO: Tune ε and entropy coefficient; ensure advantages are computed with correct `gamma` and `gae_lambda`.
+- Action out of bounds (continuous): Ensure `action_low` and `action_high` reflect your environment’s bounds', and actions are clamped accordingly.
+- NaN losses: Reduce learning rate', and enable gradient clipping', and verify rewards are finite and observations are normalized.
+- Poor performance vs PPO: Tune ε and entropy coefficient', and ensure advantages are computed with correct `gamma` and `gae_lambda`.
 - Log-prob mismatch: Make sure `old_log_probs` passed to `update` were computed by the same policy that generated the actions.
-- CUDA errors: Confirm torch and CUDA versions match your driver; run `torch.cuda.is_available()` and reinstall per pytorch.org instructions.
+- CUDA errors: Confirm torch and CUDA versions match your driver', and run `torch.cuda.is_available()` and reinstall per pytorch.org instructions.
 
 ## License:
 

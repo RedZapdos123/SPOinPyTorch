@@ -29,9 +29,9 @@ SPOAgent(
 
 ### Methods:
 - get_action_and_value(state: torch.Tensor, action: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor].
-  - Inputs: state shape (B, state_dim), dtype float32 on the same device; optional action.
+  - Inputs: state shape (B, state_dim), dtype float32 on the same device', and optional action.
   - Returns:.
-    - action: (B,) for discrete; (B, action_dim) for continuous.
+    - action: (B,) for discrete', and (B, action_dim) for continuous.
     - log_prob: (B,).
     - entropy: (B,).
     - value: (B,).
@@ -49,7 +49,7 @@ SPOAgent(
 - update(states, actions, old_log_probs, advantages, returns) -> Dict[str, float].
   - All tensors batched and device-aligned.
   - Returns keys: policy_loss, value_loss, entropy_loss, total_loss.
-  - Optimization: Adam; gradient clipping if max_grad_norm is set.
+  - Optimization: Adam', and gradient clipping if max_grad_norm is set.
   - Policy objective (SPO): r * A - (|A|/(2 * epsilon)) * (r-1)^2, where r = exp(new_log_prob - old_log_prob).
 
 ## Configurations:
@@ -81,35 +81,35 @@ class Config:
 - get_dict() -> Dict[str, Any].
 
 **Attributes:**
-- env_name (str): Gymnasium environment ID; default "LunarLanderContinuous-v3" for examples.
+- env_name (str): Gymnasium environment ID', and default "LunarLanderContinuous-v3" for examples.
 
 - seed (int): Random seed for reproducibility.
 
-- total_timesteps (int): Total environment steps to collect; like 1e6.
+- total_timesteps (int): Total environment steps to collect', and like 1e6.
 
-- steps_per_batch (int): On policy rollout length per update; like 2048 for continuous control.
+- steps_per_batch (int): On policy rollout length per update', and like 2048 for continuous control.
 
-- update_epochs (int): Number of passes over collected data per update; like 10.
+- update_epochs (int): Number of passes over collected data per update', and like 10.
 
-- num_minibatches (int): Minibatches per epoch; like 32. Effective batch size = steps_per_batch; minibatch size = steps_per_batch / num_minibatches.
+- num_minibatches (int): Minibatches per epoch', and like 32. Effective batch size = steps_per_batch', and minibatch size = steps_per_batch / num_minibatches.
 
-- learning_rate (float): Adam LR; typical range 1e-4 to 1e-3; default around 3e-4.
+- learning_rate (float): Adam LR', and typical range 1e-4 to 1e-3', and default around 3e-4.
 
-- gamma (float): Discount factor in [0.9, 0.999]; default 0.99.
+- gamma (float): Discount factor in [0.9, 0.999]', and default 0.99.
 
-- gae_lambda (float): GAE parameter in [0.9, 1.0]; default 0.95.
+- gae_lambda (float): GAE parameter in [0.9, 1.0]', and default 0.95.
 
-- epsilon (float): SPO penalty scale; typical 0.1 to 0.3; smaller values enforce tighter trust region.
+- epsilon (float): SPO penalty scale', and typical 0.1 to 0.3', and smaller values enforce tighter trust region.
 
-- entropy_coeff (float): Weight for policy entropy bonus; typical 0.0 to 0.02.
+- entropy_coeff (float): Weight for policy entropy bonus', and typical 0.0 to 0.02.
 
-- value_loss_coeff (float): Weight for value loss term; typical 0.5 to 1.0.
+- value_loss_coeff (float): Weight for value loss term', and typical 0.5 to 1.0.
 
-- max_grad_norm (float): Global gradient clip norm; typical 0.5 to 1.0; set 0 or None to disable.
+- max_grad_norm (float): Global gradient clip norm', and typical 0.5 to 1.0', and set 0 or None to disable.
 
-- actor_hidden_dims (List[int]): MLP widths for policy network; like [64,64] or [256,256].
+- actor_hidden_dims (List[int]): MLP widths for policy network', and like [64,64] or [256,256].
 
-- critic_hidden_dims (List[int]): MLP widths for value network; may mirror actor dims.
+- critic_hidden_dims (List[int]): MLP widths for value network', and may mirror actor dims.
 
 - normalize_advantages (bool): If True, standardize advantages before updates (recommended).
 
@@ -174,7 +174,7 @@ Complete training generally follows an on policy rollout → advantage/return co
   - r = exp(new_log_prob - old_log_prob).
   - L_policy = r*A - (|A|/(2*epsilon))*(r-1)^2.
 - Value loss: MSE between predicted value and return.
-- Entropy bonus: encourages exploration; weight through entropy_coeff.
+- Entropy bonus: encourages exploration', and weight through entropy_coeff.
 - Multi epoch updates: iterate update_epochs times over shuffled minibatches (num_minibatches).
 
 Pseudo code:
@@ -325,24 +325,24 @@ agent = SPOAgent(
 
 - Advantage normalization: Enable through `Config.normalize_advantages` for stable updates.
 - Epsilon (ε) schedule: Consider decaying ε slightly over training to reduce step sizes as the policy converges.
-- Entropy coefficient: Start at 0.0–0.01 for continuous control; tune upward if policy collapses prematurely.
+- Entropy coefficient: Start at 0.0–0.01 for continuous control', and tune upward if policy collapses prematurely.
 - Gradient clipping:Set `max_grad_norm` to 0.5–1.0 to mitigate rare spikes.
-- Value function: Ensure critic capacity (hidden dims) is sufficient; underfitting values hurts advantage estimation.
-- Observation scaling: Normalize inputs per environment recommendation; avoid extremely large/small magnitudes.
+- Value function: Ensure critic capacity (hidden dims) is sufficient', and underfitting values hurts advantage estimation.
+- Observation scaling: Normalize inputs per environment recommendation', and avoid extremely large/small magnitudes.
 - Seeding: Set `torch.manual_seed` and environment seeds for reproducibility.
 
 ## Troubleshooting:
 
 - NaNs in loss or values:.
-  - Reduce learning rate; verify rewards are finite; check observation normalization.
+  - Reduce learning rate', and verify rewards are finite', and check observation normalization.
   - Clamp log_std for continuous policies if the environment is very sensitive.
 - Poor learning progress:.
-  - Increase `steps_per_batch`; try more `update_epochs`; verify correct device placement.
-  - Tune ε and `entropy_coeff`; ensure `old_log_probs` are computed from the rollout policy.
+  - Increase `steps_per_batch`', and try more `update_epochs`', and verify correct device placement.
+  - Tune ε and `entropy_coeff`', and ensure `old_log_probs` are computed from the rollout policy.
 - Unstable policy updates:.
-  - Use smaller ε; enable gradient clipping; normalize advantages.
+  - Use smaller ε', and enable gradient clipping', and normalize advantages.
 - Action bounds violations (continuous):.
-  - Provide `action_low`/`action_high` matching the environment; actions are clamped to these.
+  - Provide `action_low`/`action_high` matching the environment', and actions are clamped to these.
 
 ## Version Compatibility:
 
