@@ -49,263 +49,130 @@ Dynamic: license-file
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A PyTorch implementation of the **Simple Policy Optimization (SPO)** algorithm for reinforcement learning in continuous control environments.
+A PyTorch implementation of Simple Policy Optimization (SPO) for reinforcement learning in continuous and discrete control. SPO is an alternative to Proximal Policy Optimization (PPO) featuring a smooth, unconstrained policy objective with a quadratic penalty around the probability ratio 1, offering improved stability and strong theoretical properties.
 
-SPO is a recent alternative to Proximal Policy Optimization (PPO) that offers improved sample efficiency and stability through a simplified objective function with quadratic penalty terms.
+Paper: Simple Policy Optimization (arXiv:2401.16025):
+- arXiv: https://arxiv.org/abs/2401.16025
+- DOI: https://doi.org/10.48550/arXiv.2401.16025
 
-## 🚀 Features
+## Overview:
 
-- **Clean, modular implementation** of the SPO algorithm
-- **Easy-to-use API** similar to popular RL libraries
-- **Optimized for continuous control** tasks
-- **Cross-platform compatibility** (Linux, Windows, macOS)
-- **GPU acceleration** support
-- **Comprehensive examples** including LunarLander training
-- **Hyperparameter optimization** with Optuna integration
-- **Visualization tools** for training analysis
+- Clean, modular implementation of the SPO algorithm.
+- Simple, familiar API and configuration utilities.
+- Optimized defaults for continuous control (like LunarLanderContinuous-v3).
+- GPU acceleration (CUDA) supported.
+- Examples for training, evaluation, HPO, and visualization.
 
-## 📦 Installation
+## Installation:
 
-### From PyPI (Recommended)
+From PyPI:
 
 ```bash
 pip install SPOinPyTorch
 ```
 
-### From Source
+From source:
 
 ```bash
-git clone https://github.com/SPOinPyTorch/SPOinPyTorch.git
+git clone https://github.com/RedZapdos123/SPOinPyTorch.git
 cd SPOinPyTorch
 pip install -e .
 ```
 
-### With Examples Dependencies
+## Requirements:
+
+- Python: 3.11+
+- PyTorch: 2.0+ (install per your CUDA setup from https://pytorch.org/).
+- Gymnasium: 0.29+ (for environments like LunarLanderContinuous-v3).
+- OS: Linux, macOS, or Windows; CUDA optional for GPU acceleration.
+
+**Install core dependencies:**
 
 ```bash
-pip install SPOinPyTorch[examples]
+pip install torch gymnasium numpy
 ```
 
-## 🎯 Quick Start
+Advice: Prefer the official PyTorch install command for your platform to get the correct CUDA build.
 
-### Basic Usage
+## Documentation:
 
-```python
-import torch
-import gymnasium as gym
-from SPOinPyTorch import SPOAgent, Config
+- API reference (includes usage): [docs/API.md](docs/API.md)
 
-# Create environment
-env = gym.make("LunarLanderContinuous-v3")
+## SPO vs PPO (from the Research Paper):
 
-# Initialize configuration
-config = Config()
+- Objective: PPO uses min(r * A, clip(r, 1-ε, 1+ε) * A); SPO uses a smooth penalty objective: r * A - (|A|/(2ε)) * (r-1)^2
+- Smoothness: SPO avoids clipping discontinuities, providing stable gradients for first order optimizers.
+- Trust region behavior: The quadratic penalty keeps the probability ratio r near 1 ± ε, improving constraint adherence without second order methods.
+- Empirical performance: The paper reports SPO outperforming PPO in several settings, particularly with large, complete networks.
 
-# Create SPO agent
-agent = SPOAgent(
-    state_dim=8,
-    action_dim=2,
-    config=config.get_dict(),
-    is_discrete=False,
-    action_low=[-1, -1],
-    action_high=[1, 1],
-    device='cuda' if torch.cuda.is_available() else 'cpu'
-)
 
-# Training loop (simplified)
-state, _ = env.reset()
-for step in range(1000):
-    state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
-    action, log_prob, entropy, value = agent.get_action_and_value(state_tensor)
-    
-    next_state, reward, terminated, truncated, _ = env.step(action.cpu().numpy()[0])
-    
-    # Update agent (requires batch of experiences)
-    # See examples for complete training implementation
-    
-    state = next_state
-    if terminated or truncated:
-        state, _ = env.reset()
-```
 
-### Training on LunarLander
+## Examples:
 
-```python
-# See examples/lunar_lander/train.py for complete implementation
-from SPOinPyTorch import SPOAgent, Config
+See the examples directory for complete scripts:
+- examples/lunar_lander/train.py
+- examples/lunar_lander/evaluate.py
+- examples/lunar_lander/hyperparameter_optimization.py
+- examples/lunar_lander/visualization.py
 
-config = Config()
-# ... training loop implementation
-```
+## Research:
 
-## 📚 Examples
+SPO is an unconstrained first order policy optimization method that replaces PPO's clipping with a smooth quadratic penalty centered at probability ratio 1. This yields stable gradients and implicitly constrains the ratio without second order methods.
 
-The `examples/` directory contains complete implementations:
-
-- **`lunar_lander/train.py`** - Full training script
-- **`lunar_lander/evaluate.py`** - Model evaluation and visualization
-- **`lunar_lander/hyperparameter_optimization.py`** - Optuna-based hyperparameter tuning
-- **`lunar_lander/visualization.py`** - Training progress visualization
-
-### Running Examples
-
-```bash
-cd examples/lunar_lander
-
-# Train a new agent
-python train.py
-
-# Evaluate trained agent
-python evaluate.py
-
-# Optimize hyperparameters
-python hyperparameter_optimization.py
-
-# Visualize training progress
-python visualization.py
-```
-
-## 🏆 Performance
-
-SPO demonstrates superior performance compared to PPO on LunarLanderContinuous-v3:
-
-| Metric | SPO | PPO |
-|--------|-----|-----|
-| Average Reward | **229.37 ± 78.15** | 220.2 ± 74.6 |
-| Success Rate (≥200) | **83%** | 80% |
-| Training Stability | **High** | Moderate |
-| Sample Efficiency | **Improved** | Baseline |
-
-## 🔧 API Reference
-
-### SPOAgent
-
-The main agent class implementing the SPO algorithm.
-
-```python
-SPOAgent(
-    state_dim: int,           # Dimension of state space
-    action_dim: int,          # Dimension of action space  
-    config: dict,             # Configuration dictionary
-    is_discrete: bool = True, # Whether action space is discrete
-    action_low: list = None,  # Lower bounds for continuous actions
-    action_high: list = None, # Upper bounds for continuous actions
-    device: str = 'cpu'       # Device to run on ('cpu' or 'cuda')
-)
-```
-
-**Key Methods:**
-- `get_action_and_value(state)` - Get action, log probability, entropy, and value
-- `get_value(state)` - Get state value estimate
-- `compute_gae(rewards, dones, values, next_value)` - Compute GAE advantages
-- `update(states, actions, old_log_probs, advantages, returns)` - Update policy
-
-### Config
-
-Configuration class with optimized hyperparameters.
-
-```python
-config = Config()
-config.learning_rate = 0.0003  # Modify parameters
-config_dict = config.get_dict()  # Get as dictionary
-```
-
-### Models
-
-Neural network architectures for actor and critic.
-
-```python
-from SPOinPyTorch import Actor, Critic
-
-actor = Actor(state_dim=8, action_dim=2, hidden_dims=[256, 256], is_discrete=False)
-critic = Critic(state_dim=8, hidden_dims=[256, 256])
-```
-
-## 🔬 Algorithm Details
-
-SPO modifies the PPO objective with a quadratic penalty term:
+Objective:
 
 ```
-L_SPO = r(θ) * A - (|A| / 2ε) * (r(θ) - 1)²
+L_SPO = r * A - (|A| / (2 * ε)) * (r - 1)^2
 ```
 
-Where:
-- `r(θ)` is the probability ratio
-- `A` is the advantage estimate  
-- `ε` is the clipping parameter
+Advantages over PPO (per the paper):
+- Smooth, unconstrained objective amenable to standard first order optimizers
+- Stronger theoretical properties for constraining the probability ratio within a trust region neighborhood
+- Improved stability due to quadratic penalty and absence of clipping discontinuities
+- Competitive or superior empirical performance to PPO, particularly for large, complete networks
 
-This formulation provides:
-- **Better sample efficiency** through improved gradient estimates
-- **Enhanced stability** via quadratic penalty regularization
-- **Simplified implementation** compared to PPO's clipped objective
 
-## 🛠️ Development
 
-### Setting up Development Environment
+## Best Practices:
 
-```bash
-git clone https://github.com/SPOinPyTorch/SPOinPyTorch.git
-cd SPOinPyTorch
+- Normalize advantages: Set `Config.normalize_advantages = True` for improved stability.
+- Tuning epsilon (ε): Start with ε in [0.1, 0.3]; larger ε reduces the penalty and allows larger updates.
+- Learning rate: 3e-4 is a good default; try 1e-4 to 1e-3 depending on reward scale and network size.
+- Rollout length: `steps_per_batch` controls bias variance trade off; longer rollouts improve value targets but may increase correlation.
+- Minibatching: Use multiple epochs over minibatches for better sample efficiency; shuffle data each epoch.
+- Gradient clipping: Set `max_grad_norm` to prevent rare spikes in gradients.
+- Seeding: Fix `Config.seed` and set `torch.backends.cudnn.deterministic=True` if strict reproducibility is required.
+- Device: Move tensors and models to the same device; prefer float32; avoid implicit CPU to GPU and reverse transfers in the loop.
 
-# Install in development mode
-pip install -e .[dev]
+## Troubleshooting:
 
-# Run tests
-pytest
+- Action out of bounds (continuous): Ensure `action_low` and `action_high` reflect your environment’s bounds; actions are clamped accordingly.
+- NaN losses: Reduce learning rate; enable gradient clipping; verify rewards are finite and observations are normalized.
+- Poor performance vs PPO: Tune ε and entropy coefficient; ensure advantages are computed with correct `gamma` and `gae_lambda`.
+- Log-prob mismatch: Make sure `old_log_probs` passed to `update` were computed by the same policy that generated the actions.
+- CUDA errors: Confirm torch and CUDA versions match your driver; run `torch.cuda.is_available()` and reinstall per pytorch.org instructions.
 
-# Format code
-black src/ examples/
-isort src/ examples/
+## License:
 
-# Type checking
-mypy src/
-```
+This project is licensed under the MIT License. See LICENSE for details.
 
-### Contributing
+## Citation:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 📖 Citation
-
-If you use SPOinPyTorch in your research, please cite:
+If you use this library or the SPO algorithm in your work, please cite the paper and this repository.
 
 ```bibtex
-@article{spo2024,
+@article{xie2024spo,
   title={Simple Policy Optimization},
-  author={SPO Authors},
+  author={Xie, Zhengpeng and Zhang, Qiang and Yang, Fan and Hutter, Marco and Xu, Renjing},
   journal={arXiv preprint arXiv:2401.16025},
-  year={2024}
+  year={2024},
+  doi={10.48550/arXiv.2401.16025}
 }
 
-@software{spoinpytorch2024,
+@software{spoinpytorch2025,
   title={SPOinPyTorch: Simple Policy Optimization in PyTorch},
   author={SPOinPyTorch Contributors},
-  year={2024},
-  url={https://github.com/SPOinPyTorch/SPOinPyTorch}
+  year={2025},
+  url={https://github.com/RedZapdos123/SPOinPyTorch}
 }
 ```
-
-## 🔗 References
-
-- [Simple Policy Optimization Paper](https://arxiv.org/abs/2401.16025)
-- [PyTorch](https://pytorch.org/)
-- [Gymnasium](https://gymnasium.farama.org/)
-- [Optuna](https://optuna.org/)
-
-## 🤝 Acknowledgments
-
-- Original SPO research paper authors
-- PyTorch and Gymnasium communities
-- Contributors and users of this library
-
----
-
-**Made with ❤️ for the reinforcement learning community**
