@@ -31,18 +31,18 @@ SPOAgent(
 - get_action_and_value(state: torch.Tensor, action: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor].
   - Inputs: state shape (B, state_dim), dtype float32 on the same device', and optional action.
   - Returns:.
-    - action: (B,) for discrete', and (B, action_dim) for continuous.
-    - log_prob: (B,).
-    - entropy: (B,).
-    - value: (B,).
+    - action: (B, ) for discrete', and (B, action_dim) for continuous.
+    - log_prob: (B, ).
+    - entropy: (B, ).
+    - value: (B, ).
   - Notes: For continuous, actions are clamped to [action_low, action_high] if provided. log_prob/entropy are summed across action dims.
 
 - get_value(state: torch.Tensor) -> torch.Tensor.
   - Inputs: state (B, state_dim).
-  - Returns: value (B,).
+  - Returns: value (B, ).
 
 - compute_gae(rewards: torch.Tensor, dones: torch.Tensor, values: torch.Tensor, next_value: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor].
-  - Shapes: rewards/dones/values (T, N), next_value (N,) or (1,).
+  - Shapes: rewards/dones/values (T, N), next_value (N, ) or (1, ).
   - Returns: advantages (T, N), returns (T, N) where returns = advantages + values.
   - Uses gamma and gae_lambda from Config.
 
@@ -107,7 +107,7 @@ class Config:
 
 - max_grad_norm (float): Global gradient clip norm', and typical 0.5 to 1.0', and set 0 or None to disable.
 
-- actor_hidden_dims (List[int]): MLP widths for policy network', and like [64,64] or [256,256].
+- actor_hidden_dims (List[int]): MLP widths for policy network', and like [64, 64] or [256, 256].
 
 - critic_hidden_dims (List[int]): MLP widths for value network', and may mirror actor dims.
 
@@ -135,7 +135,7 @@ Value function network.
 Critic(state_dim: int, hidden_dims: List[int] = [64, 64])
 ```
 
-- Forward outputs value (B,).
+- Forward outputs value (B, ).
 
 ## Utility Functions:
 
@@ -154,7 +154,7 @@ from SPOinPyTorch import SPOAgent, Config
 
 env = gym.make("LunarLanderContinuous-v3")
 
-agent = SPOAgent(8, 2, Config().get_dict(), is_discrete=False, action_low=[-1,-1], action_high=[1,1])
+agent = SPOAgent(8, 2, Config().get_dict(), is_discrete=False, action_low=[-1, -1], action_high=[1, 1])
 s = torch.randn(1, 8)
 action, logp, ent, v = agent.get_action_and_value(s)
 ```
@@ -166,7 +166,7 @@ Complete training generally follows an on policy rollout → advantage/return co
 
 - Rollout buffer shapes (time major):.
   - rewards, dones, values: (T, N) where T is steps per rollout and N is number of parallel envs.
-  - next_value: (N,) at rollout end.
+  - next_value: (N, ) at rollout end.
 - Advantage estimation: Generalized Advantage Estimation (GAE).
   - advantages, returns = compute_gae(rewards, dones, values, next_value).
   - Optionally normalize advantages to zero mean and unit std.
