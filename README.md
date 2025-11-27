@@ -1,4 +1,4 @@
-# SPOinPyTorch
+# SPOinPyTorch:
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
@@ -7,8 +7,8 @@
 A PyTorch implementation of Simple Policy Optimization (SPO) for reinforcement learning in continuous and discrete control. SPO is an alternative to Proximal Policy Optimization (PPO) featuring a smooth, unconstrained policy objective with a quadratic penalty around the probability ratio 1, offering improved stability and strong theoretical properties.
 
 Paper: Simple Policy Optimization (arXiv:2401.16025):
-- arXiv: https://arxiv.org/abs/2401.16025
-- DOI: https://doi.org/10.48550/arXiv.2401.16025
+- arXiv: https://arxiv.org/abs/2401.16025.
+- DOI: https://doi.org/10.48550/arXiv.2401.16025.
 
 ## Overview:
 
@@ -36,7 +36,7 @@ pip install -e .
 
 ## Requirements:
 
-- Python: 3.11+
+- Python: 3.11+.
 - PyTorch: 2.0+ (install per your CUDA setup from https://pytorch.org/).
 - Gymnasium: 0.29+ (for environments like LunarLanderContinuous-v3).
 - OS: Linux, macOS, or Windows; CUDA optional for GPU acceleration.
@@ -51,11 +51,11 @@ Advice: Prefer the official PyTorch install command for your platform to get the
 
 ## Documentation:
 
-- API reference (includes usage): [docs/API.md](docs/API.md)
+- API reference (includes usage): [docs/API.md](docs/API.md).
 
 ## SPO vs PPO (from the Research Paper):
 
-- Objective: PPO uses min(r * A, clip(r, 1-ε, 1+ε) * A); SPO uses a smooth penalty objective: r * A - (|A|/(2ε)) * (r-1)^2
+- Objective: PPO uses min(r * A, clip(r, 1-ε, 1+ε) * A); SPO uses a smooth penalty objective: r * A - (|A|/(2ε)) * (r-1)^2.
 - Smoothness: SPO avoids clipping discontinuities, providing stable gradients for first order optimizers.
 - Trust region behavior: The quadratic penalty keeps the probability ratio r near 1 ± ε, improving constraint adherence without second order methods.
 - Empirical performance: The paper reports SPO outperforming PPO in several settings, particularly with large, complete networks.
@@ -65,10 +65,10 @@ Advice: Prefer the official PyTorch install command for your platform to get the
 ## Examples:
 
 See the examples directory for complete scripts:
-- examples/lunar_lander/train.py
-- examples/lunar_lander/evaluate.py
-- examples/lunar_lander/hyperparameter_optimization.py
-- examples/lunar_lander/visualization.py
+- examples/lunar_lander/train.py.
+- examples/lunar_lander/evaluate.py.
+- examples/lunar_lander/hyperparameter_optimization.py.
+- examples/lunar_lander/visualization.py.
 
 ## Research:
 
@@ -81,10 +81,10 @@ L_SPO = r * A - (|A| / (2 * ε)) * (r - 1)^2
 ```
 
 Advantages over PPO (per the paper):
-- Smooth, unconstrained objective amenable to standard first order optimizers
-- Stronger theoretical properties for constraining the probability ratio within a trust region neighborhood
-- Improved stability due to quadratic penalty and absence of clipping discontinuities
-- Competitive or superior empirical performance to PPO, particularly for large, complete networks
+- Smooth, unconstrained objective amenable to standard first order optimizers.
+- Stronger theoretical properties for constraining the probability ratio within a trust region neighborhood.
+- Improved stability due to quadratic penalty and absence of clipping discontinuities.
+- Competitive or superior empirical performance to PPO, particularly for large, complete networks.
 
 
 

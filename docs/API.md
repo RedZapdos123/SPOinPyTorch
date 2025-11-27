@@ -28,29 +28,29 @@ SPOAgent(
 - device (str): 'cpu' or 'cuda'.
 
 ### Methods:
-- get_action_and_value(state: torch.Tensor, action: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]
-  - Inputs: state shape (B, state_dim), dtype float32 on the same device; optional action
-  - Returns:
-    - action: (B,) for discrete; (B, action_dim) for continuous
-    - log_prob: (B,)
-    - entropy: (B,)
-    - value: (B,)
+- get_action_and_value(state: torch.Tensor, action: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor].
+  - Inputs: state shape (B, state_dim), dtype float32 on the same device; optional action.
+  - Returns:.
+    - action: (B,) for discrete; (B, action_dim) for continuous.
+    - log_prob: (B,).
+    - entropy: (B,).
+    - value: (B,).
   - Notes: For continuous, actions are clamped to [action_low, action_high] if provided. log_prob/entropy are summed across action dims.
 
-- get_value(state: torch.Tensor) -> torch.Tensor
-  - Inputs: state (B, state_dim)
-  - Returns: value (B,)
+- get_value(state: torch.Tensor) -> torch.Tensor.
+  - Inputs: state (B, state_dim).
+  - Returns: value (B,).
 
-- compute_gae(rewards: torch.Tensor, dones: torch.Tensor, values: torch.Tensor, next_value: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]
-  - Shapes: rewards/dones/values (T, N), next_value (N,) or (1,)
-  - Returns: advantages (T, N), returns (T, N) where returns = advantages + values
-  - Uses gamma and gae_lambda from Config
+- compute_gae(rewards: torch.Tensor, dones: torch.Tensor, values: torch.Tensor, next_value: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor].
+  - Shapes: rewards/dones/values (T, N), next_value (N,) or (1,).
+  - Returns: advantages (T, N), returns (T, N) where returns = advantages + values.
+  - Uses gamma and gae_lambda from Config.
 
-- update(states, actions, old_log_probs, advantages, returns) -> Dict[str, float]
-  - All tensors batched and device-aligned
-  - Returns keys: policy_loss, value_loss, entropy_loss, total_loss
-  - Optimization: Adam; gradient clipping if max_grad_norm is set
-  - Policy objective (SPO): r * A - (|A|/(2 * epsilon)) * (r-1)^2, where r = exp(new_log_prob - old_log_prob)
+- update(states, actions, old_log_probs, advantages, returns) -> Dict[str, float].
+  - All tensors batched and device-aligned.
+  - Returns keys: policy_loss, value_loss, entropy_loss, total_loss.
+  - Optimization: Adam; gradient clipping if max_grad_norm is set.
+  - Policy objective (SPO): r * A - (|A|/(2 * epsilon)) * (r-1)^2, where r = exp(new_log_prob - old_log_prob).
 
 ## Configurations:
 
@@ -77,8 +77,8 @@ class Config:
 ```
 
 ### Methods:
-- update(new_config: Dict[str, Any]) -> None
-- get_dict() -> Dict[str, Any]
+- update(new_config: Dict[str, Any]) -> None.
+- get_dict() -> Dict[str, Any].
 
 **Attributes:**
 - env_name (str): Gymnasium environment ID; default "LunarLanderContinuous-v3" for examples.
@@ -122,10 +122,10 @@ The Policy network.
 Actor(state_dim: int, action_dim: int, hidden_dims: List[int] = [64, 64], is_discrete: bool = True)
 ```
 
-- Discrete: returns logits (B, action_dim)
-- Continuous: returns (mean, log_std) where
-  - mean: (B, action_dim)
-  - log_std: broadcastable to (B, action_dim)
+- Discrete: returns logits (B, action_dim).
+- Continuous: returns (mean, log_std) where.
+  - mean: (B, action_dim).
+  - log_std: broadcastable to (B, action_dim).
 
 ## Critic:
 
@@ -135,12 +135,12 @@ Value function network.
 Critic(state_dim: int, hidden_dims: List[int] = [64, 64])
 ```
 
-- Forward outputs value (B,)
+- Forward outputs value (B,).
 
 ## Utility Functions:
 
-- layer_init(layer: nn.Module, std: float = sqrt(2), bias_const: float = 0.0) -> nn.Module
-  - Orthogonal weight init, constant bias
+- layer_init(layer: nn.Module, std: float = sqrt(2), bias_const: float = 0.0) -> nn.Module.
+  - Orthogonal weight init, constant bias.
 
 ## Examples:
 
@@ -164,17 +164,17 @@ action, logp, ent, v = agent.get_action_and_value(s)
 
 Complete training generally follows an on policy rollout → advantage/return computation → multi epoch update over minibatches.
 
-- Rollout buffer shapes (time major):
-  - rewards, dones, values: (T, N) where T is steps per rollout and N is number of parallel envs
-  - next_value: (N,) at rollout end
-- Advantage estimation: Generalized Advantage Estimation (GAE)
-  - advantages, returns = compute_gae(rewards, dones, values, next_value)
-  - Optionally normalize advantages to zero mean and unit std
-- Policy update (SPO objective):
-  - r = exp(new_log_prob - old_log_prob)
-  - L_policy = r*A - (|A|/(2*epsilon))*(r-1)^2
+- Rollout buffer shapes (time major):.
+  - rewards, dones, values: (T, N) where T is steps per rollout and N is number of parallel envs.
+  - next_value: (N,) at rollout end.
+- Advantage estimation: Generalized Advantage Estimation (GAE).
+  - advantages, returns = compute_gae(rewards, dones, values, next_value).
+  - Optionally normalize advantages to zero mean and unit std.
+- Policy update (SPO objective):.
+  - r = exp(new_log_prob - old_log_prob).
+  - L_policy = r*A - (|A|/(2*epsilon))*(r-1)^2.
 - Value loss: MSE between predicted value and return.
-- Entropy bonus: encourages exploration; weight through entropy_coeff
+- Entropy bonus: encourages exploration; weight through entropy_coeff.
 - Multi epoch updates: iterate update_epochs times over shuffled minibatches (num_minibatches).
 
 Pseudo code:
@@ -190,8 +190,8 @@ for epoch in range(config.update_epochs):
 ```
 
 #### References:
-- Paper: https://arxiv.org/abs/2401.16025
-- README: [../README.md](../README.md)
+- Paper: https://arxiv.org/abs/2401.16025.
+- README: [../README.md](../README.md).
 
 ## Usage Guide:
 
@@ -333,33 +333,33 @@ agent = SPOAgent(
 
 ## Troubleshooting:
 
-- NaNs in loss or values:
+- NaNs in loss or values:.
   - Reduce learning rate; verify rewards are finite; check observation normalization.
   - Clamp log_std for continuous policies if the environment is very sensitive.
-- Poor learning progress:
+- Poor learning progress:.
   - Increase `steps_per_batch`; try more `update_epochs`; verify correct device placement.
   - Tune ε and `entropy_coeff`; ensure `old_log_probs` are computed from the rollout policy.
-- Unstable policy updates:
+- Unstable policy updates:.
   - Use smaller ε; enable gradient clipping; normalize advantages.
-- Action bounds violations (continuous):
+- Action bounds violations (continuous):.
   - Provide `action_low`/`action_high` matching the environment; actions are clamped to these.
 
 ## Version Compatibility:
 
-- Python: 3.11+
-- PyTorch: 2.0+
-- Gymnasium: 0.29+
+- Python: 3.11+.
+- PyTorch: 2.0+.
+- Gymnasium: 0.29+.
 
 GPU acceleration is supported when `device='cuda'` and a compatible CUDA build of PyTorch is installed.
 
 ## Environment Support:
 
 - Designed for Gymnasium environments.
-- Discrete and continuous action spaces supported:
+- Discrete and continuous action spaces supported:.
   - Discrete: Categorical policy over action_dim.
   - Continuous: Diagonal Normal policy parameterized by mean and log_std per action dimension.
 
 ## References:
 
-- Simple Policy Optimization (arXiv:2401.16025): https://arxiv.org/abs/2401.16025
-- Project README: [README.md](../README.md)
+- Simple Policy Optimization (arXiv:2401.16025): https://arxiv.org/abs/2401.16025.
+- Project README: [README.md](../README.md).
